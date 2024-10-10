@@ -1,27 +1,20 @@
-# Use the official .NET SDK image as a build environment
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+# Use a lightweight base image
+FROM node:alpine
 
 # Set the working directory
 WORKDIR /app
 
-# Copy csproj and restore as distinct layers
-COPY *.csproj ./
-RUN dotnet restore
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# Copy the rest of the application code
-COPY . ./
+# Install dependencies
+RUN npm install
 
-# Build the application
-RUN dotnet publish -c Release -o out
+# Copy the rest of your application code
+COPY . .
 
-# Build runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Expose the port your app runs on
+EXPOSE 8080
 
-WORKDIR /app
-COPY --from=build-env /app/out ./
-
-# Expose the port on which the app runs
-EXPOSE 80
-
-# Command to run the application
-ENTRYPOINT ["dotnet", "YourAppName.dll"]
+# Start the application
+CMD ["npm", "start"]
